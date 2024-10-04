@@ -1,0 +1,97 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building the project...'
+                // Build automation tool: Maven
+                sh 'mvn clean install > build.log'
+                echo 'Build completed! Logs saved to build.log.'
+            }
+        }
+
+        stage('Unit and Integration Tests') {
+            steps {
+                echo 'Running Unit and Integration Tests...'
+                // Test automation tool: JUnit (through Maven)
+                sh 'mvn test > test.log'
+                echo 'Tests completed! Logs saved to test.log.'
+            }
+        }
+
+        stage('Code Analysis') {
+            steps {
+                echo 'Performing Code Analysis...'
+                // Code analysis tool: SonarQube
+                sh 'sonar-scanner > code-analysis.log'
+                echo 'Code analysis completed! Logs saved to code-analysis.log.'
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                echo 'Performing Security Scan...'
+                // Security scanning tool: OWASP Dependency-Check
+                sh 'dependency-check > security-scan.log'
+                echo 'Security scan completed! Logs saved to security-scan.log.'
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                echo 'Deploying to Staging...'
+                // Deployment tool: Custom shell script or AWS CLI
+                sh 'echo "Deploying to staging" > deploy-staging.log'
+                echo 'Deployed to staging! Logs saved to deploy-staging.log.'
+            }
+        }
+
+        stage('Integration Tests on Staging') {
+            steps {
+                echo 'Running Integration Tests on Staging...'
+                // Test automation tool: JUnit for staging tests
+                sh 'mvn integration-test > staging-integration-test.log'
+                echo 'Staging tests completed! Logs saved to staging-integration-test.log.'
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                echo 'Deploying to Production...'
+                // Deployment tool: Custom shell script or AWS CLI
+                sh 'echo "Deploying to production" > deploy-production.log'
+                echo 'Deployed to production! Logs saved to deploy-production.log.'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully.'
+            // Email notification after successful pipeline execution
+            emailext(
+                to: 'kalrayashpreet@gmail.com',
+                subject: "Pipeline Succeeded",
+                body: "The Jenkins pipeline has completed successfully.",
+                attachmentsPattern: '**/*.log',  // Attach all .log files
+                compressLog: true // Optional: Compress log before sending
+            )
+        }
+
+        failure {
+            // Send email with log files as attachment if pipeline fails
+            emailext(
+                to: 'kalrayashpreet@gmail.com',
+                subject: "Pipeline Failed",
+                body: "The Jenkins pipeline has failed. Check logs for details.",
+                attachmentsPattern: '**/*.log',  // Attach all .log files
+                compressLog: true // Optional: Compress log before sending
+            )
+        }
+
+        always {
+            echo 'Pipeline execution finished.'
+        }
+    }
+}
