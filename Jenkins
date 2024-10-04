@@ -4,71 +4,81 @@ pipeline {
         stage("Build") {
             steps {
                 echo 'Building project to compile and package using Maven'
-                // sh 'mvn clean package'
+                // Save build logs to a file
+                sh 'mvn clean package > build.log'
             }
         }
         stage("Unit and Integration Tests") {
             steps {
                 echo 'Running JUnit tests to verify code functionality.'
-                // sh 'mvn test'
+                // Save test logs to a file
+                sh 'mvn test > test.log'
                 echo 'Executing integration tests to ensure components work together.'
-                // sh 'mvn verify'
+                // Save integration test logs to a file
+                sh 'mvn verify > integration-test.log'
             }
             post {
                 success {
                     mail to: "kalrayashpreet@gmail.com",
                     subject: "Success: JUnit and Integration tests successful.",
                     body: "JUnit and integration tests have passed successfully. The stage is working.",
-                    attachLog: true
+                    attachmentsPattern: 'test.log, integration-test.log'  // Attach logs to the email
                 }
                 failure {
                     mail to: "kalrayashpreet@gmail.com",
                     subject: "Failure: JUnit and Integration tests failure.",
-                    body: "JUnit and integration tests have failed. The stage is not working. Please review the logs."
+                    body: "JUnit and integration tests have failed. Please review the attached logs.",
+                    attachmentsPattern: 'test.log, integration-test.log'  // Attach logs to the email
                 }
             }
         }
         stage("Code Analysis") {
             steps {
                 echo 'Performing code analysis using SonarQube'
-                // sh 'mvn sonar:sonar'
+                // Save code analysis logs to a file
+                sh 'mvn sonar:sonar > code-analysis.log'
             }
         }
         stage("Security Scan") {
             steps {
                 echo 'Conducting security scan using OWASP ZAP'
-                // sh 'zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://localhost:8080'
+                // Save security scan logs to a file
+                sh 'zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://localhost:8080 > security-scan.log'
             }
             post {
                 success {
                     mail to: "kalrayashpreet@gmail.com",
                     subject: "Success: Security scan successful.",
                     body: "The security scan has completed successfully. The scan is secure.",
-                    attachLog: true
+                    attachmentsPattern: 'security-scan.log'  // Attach security scan log
                 }
                 failure {
                     mail to: "kalrayashpreet@gmail.com",
                     subject: "Failure: Security scan failed.",
-                    body: "The security scan has failed. The scan is not secure. Please review and take necessary actions."
+                    body: "The security scan has failed. Please review the attached logs.",
+                    attachmentsPattern: 'security-scan.log'  // Attach security scan log
                 }
             }
         }
         stage("Deploy to Staging") {
             steps {
                 echo 'Deploying to staging server (AWS EC2) at s3://staging-bucket/'
-                // sh 'aws deploy create-deployment --application-name my-app --deployment-group-name staging-group --s3-location bucket=staging-bucket,key=my-app.zip'
+                // Save deployment logs to a file
+                sh 'echo "Deploying to staging" > deploy-staging.log'
             }
         }
         stage("Integration Tests on Staging") {
             steps {
                 echo 'Running integration tests in the staging environment'
-                // sh 'mvn verify -Dtest=IntegrationTest'
+                // Save staging integration test logs
+                sh 'mvn verify -Dtest=IntegrationTest > staging-integration-test.log'
             }
         }
         stage("Deploy to Production") {
             steps {
                 echo 'Deploying to production server (AWS EC2)'
-                // sh 'aws deploy create-deployment --application-name my-app --deployment-group-name production-group --s3-location bucket=production-bucket,key=my-app.zip'
+                // Save production deployment logs to a file
+                sh 'echo "Deploying to production" > deploy-production.log'
             }
         }
         stage("Complete") {
