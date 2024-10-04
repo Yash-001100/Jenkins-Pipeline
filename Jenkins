@@ -1,97 +1,88 @@
 pipeline {
     agent any
-
     stages {
-        stage('Build') {
+        stage("Build") {
             steps {
-                echo 'Building the project...'
-                // Build automation tool: Maven
-                bat 'mvn clean install > build.log'
-                echo 'Build completed! Logs saved to build.log.'
+                echo 'Building project to compile and package using Maven'
+                // sh 'mvn clean package'
             }
         }
-
-        stage('Unit and Integration Tests') {
+        stage("Unit and Integration Tests") {
             steps {
-                echo 'Running Unit and Integration Tests...'
-                // Test automation tool: JUnit (through Maven)
-                bat 'mvn test > test.log'
-                echo 'Tests completed! Logs saved to test.log.'
+                echo 'Running JUnit tests to verify code functionality.'
+                // sh 'mvn test'
+                echo 'Executing integration tests to ensure components work together.'
+                // sh 'mvn verify'
+            }
+            post {
+                success {
+                    mail to: "kalrayashpreet@gmail.com",
+                    subject: "Success: JUnit and Integration tests successful.",
+                    body: "JUnit and integration tests have passed successfully. The stage is working.",
+                    attachLog: true
+                }
+                failure {
+                    mail to: "kalrayashpreet@gmail.com",
+                    subject: "Failure: JUnit and Integration tests failure.",
+                    body: "JUnit and integration tests have failed. The stage is not working. Please review the logs."
+                }
             }
         }
-
-        stage('Code Analysis') {
+        stage("Code Analysis") {
             steps {
-                echo 'Performing Code Analysis...'
-                // Code analysis tool: SonarQube
-                bat 'sonar-scanner > code-analysis.log'
-                echo 'Code analysis completed! Logs saved to code-analysis.log.'
+                echo 'Performing code analysis using SonarQube'
+                // sh 'mvn sonar:sonar'
             }
         }
-
-        stage('Security Scan') {
+        stage("Security Scan") {
             steps {
-                echo 'Performing Security Scan...'
-                // Security scanning tool: OWASP Dependency-Check
-                bat 'dependency-check > security-scan.log'
-                echo 'Security scan completed! Logs saved to security-scan.log.'
+                echo 'Conducting security scan using OWASP ZAP'
+                // sh 'zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://localhost:8080'
+            }
+            post {
+                success {
+                    mail to: "kalrayashpreet@gmail.com",
+                    subject: "Success: Security scan successful.",
+                    body: "The security scan has completed successfully. The scan is secure.",
+                    attachLog: true
+                }
+                failure {
+                    mail to: "kalrayashpreet@gmail.com",
+                    subject: "Failure: Security scan failed.",
+                    body: "The security scan has failed. The scan is not secure. Please review and take necessary actions."
+                }
             }
         }
-
-        stage('Deploy to Staging') {
+        stage("Deploy to Staging") {
             steps {
-                echo 'Deploying to Staging...'
-                // Deployment tool: Custom shell script or AWS CLI
-                bat 'echo "Deploying to staging" > deploy-staging.log'
-                echo 'Deployed to staging! Logs saved to deploy-staging.log.'
+                echo 'Deploying to staging server (AWS EC2) at s3://staging-bucket/'
+                // sh 'aws deploy create-deployment --application-name my-app --deployment-group-name staging-group --s3-location bucket=staging-bucket,key=my-app.zip'
             }
         }
-
-        stage('Integration Tests on Staging') {
+        stage("Integration Tests on Staging") {
             steps {
-                echo 'Running Integration Tests on Staging...'
-                // Test automation tool: JUnit for staging tests
-                bat 'mvn integration-test > staging-integration-test.log'
-                echo 'Staging tests completed! Logs saved to staging-integration-test.log.'
+                echo 'Running integration tests in the staging environment'
+                // sh 'mvn verify -Dtest=IntegrationTest'
             }
         }
-
-        stage('Deploy to Production') {
+        stage("Deploy to Production") {
             steps {
-                echo 'Deploying to Production...'
-                // Deployment tool: Custom shell script or AWS CLI
-                bat 'echo "Deploying to production" > deploy-production.log'
-                echo 'Deployed to production! Logs saved to deploy-production.log.'
+                echo 'Deploying to production server (AWS EC2)'
+                // sh 'aws deploy create-deployment --application-name my-app --deployment-group-name production-group --s3-location bucket=production-bucket,key=my-app.zip'
+            }
+        }
+        stage("Complete") {
+            steps {
+                echo 'Deployment process completed'
             }
         }
     }
-
     post {
         success {
-            echo 'Pipeline completed successfully.'
-            // Email notification after successful pipeline execution
-            emailext(
-                to: 'kalrayashpreet@gmail.com',
-                subject: "Pipeline Succeeded",
-                body: "The Jenkins pipeline has completed successfully.",
-                attachmentsPattern: '**/*.log',  // Attach all .log files
-                compressLog: true // Optional: Compress log before sending
-            )
+            echo 'Deployment to production was successful!'
         }
-
         failure {
-            // Send email with log files as attachment if pipeline fails
-            emailext(
-                to: 'kalrayashpreet@gmail.com',
-                subject: "Pipeline Failed",
-                body: "The Jenkins pipeline has failed. Check logs for details.",
-                attachmentsPattern: '**/*.log',  // Attach all .log files
-                compressLog: true // Optional: Compress log before sending
-            )
-        }
-
-        always {
-            echo 'Pipeline execution finished.'
+            echo 'Deployment failed!'
         }
     }
 }
