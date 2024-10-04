@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Building the project...'
                 // Build automation tool: Maven
-                sh 'mvn clean install > build.log'
+                bat 'mvn clean install > build.log'
                 echo 'Build completed! Logs saved to build.log.'
             }
         }
@@ -15,7 +15,7 @@ pipeline {
             steps {
                 echo 'Running Unit and Integration Tests...'
                 // Test automation tool: JUnit (through Maven)
-                sh 'mvn test > test.log'
+                bat 'mvn test > test.log'
                 echo 'Tests completed! Logs saved to test.log.'
             }
         }
@@ -24,7 +24,7 @@ pipeline {
             steps {
                 echo 'Performing Code Analysis...'
                 // Code analysis tool: SonarQube
-                sh 'sonar-scanner > code-analysis.log'
+                bat 'sonar-scanner > code-analysis.log'
                 echo 'Code analysis completed! Logs saved to code-analysis.log.'
             }
         }
@@ -33,7 +33,7 @@ pipeline {
             steps {
                 echo 'Performing Security Scan...'
                 // Security scanning tool: OWASP Dependency-Check
-                sh 'dependency-check > security-scan.log'
+                bat 'dependency-check > security-scan.log'
                 echo 'Security scan completed! Logs saved to security-scan.log.'
             }
         }
@@ -42,7 +42,7 @@ pipeline {
             steps {
                 echo 'Deploying to Staging...'
                 // Deployment tool: Custom shell script or AWS CLI
-                sh 'echo "Deploying to staging" > deploy-staging.log'
+                bat 'echo "Deploying to staging" > deploy-staging.log'
                 echo 'Deployed to staging! Logs saved to deploy-staging.log.'
             }
         }
@@ -51,7 +51,7 @@ pipeline {
             steps {
                 echo 'Running Integration Tests on Staging...'
                 // Test automation tool: JUnit for staging tests
-                sh 'mvn integration-test > staging-integration-test.log'
+                bat 'mvn integration-test > staging-integration-test.log'
                 echo 'Staging tests completed! Logs saved to staging-integration-test.log.'
             }
         }
@@ -60,7 +60,7 @@ pipeline {
             steps {
                 echo 'Deploying to Production...'
                 // Deployment tool: Custom shell script or AWS CLI
-                sh 'echo "Deploying to production" > deploy-production.log'
+                bat 'echo "Deploying to production" > deploy-production.log'
                 echo 'Deployed to production! Logs saved to deploy-production.log.'
             }
         }
